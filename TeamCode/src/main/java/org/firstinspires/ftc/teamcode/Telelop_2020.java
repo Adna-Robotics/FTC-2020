@@ -19,7 +19,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
 
 
-@TeleOp(name = "Drive 2020")
+@TeleOp(name = "Drive 2020 (new)")
 
 public class Telelop_2020 extends LinearOpMode {
 
@@ -38,6 +38,9 @@ public class Telelop_2020 extends LinearOpMode {
     //Wobble goal toggle switch
     boolean WobbleOut = false; //false=in and true=out
     boolean WobbleToggle = true;
+
+    boolean WobbleGrab = false;
+    boolean WobbleGrabToggle = true;
 
     //Shooter toggle switch
     boolean ShooterRunning = false;
@@ -127,19 +130,37 @@ public class Telelop_2020 extends LinearOpMode {
 
 
 
+            //Wobble grab control
+            if (gamepad1.dpad_up && WobbleGrabToggle){
+                WobbleGrabToggle=false;
+                if(!WobbleGrab){
+                    WobbleGrabber.setPosition(0.075);
+                    WobbleGrab=true;
+                }
+                else{
+                    WobbleGrabber.setPosition(0.6);
+                    WobbleGrab=false;
+                }
+            }
+            else if(!gamepad1.dpad_up && !WobbleGrabToggle){
+                WobbleGrabToggle=true;
+            }
+
+
+
             //Shooter on/off control
             if(gamepad1.b && ShooterToggle){
+                ShooterToggle=false;
                 if(!ShooterRunning){
                     Shooter_1.set(-0.85);
-                    Shooter_2.set(-0.85);
+                    Shooter_2.set(Shooter_1.get());
                     ShooterRunning=true;
                 }
                 else{
                     Shooter_1.set(0);
-                    Shooter_2.set(0);
+                    Shooter_2.set(Shooter_1.get());
                     ShooterRunning=false;
                 }
-                ShooterToggle=false;
             }
             else if(!gamepad1.b && !ShooterToggle){
                 ShooterToggle=true;
@@ -178,6 +199,7 @@ public class Telelop_2020 extends LinearOpMode {
             //Telemetry
             telemetry.addData("Shooter Running", ShooterRunning);
             telemetry.addData("Wobble Position", WobbleOut);
+            telemetry.addData("Wobble Grab", WobbleGrab);
             telemetry.update();
         }
     }
