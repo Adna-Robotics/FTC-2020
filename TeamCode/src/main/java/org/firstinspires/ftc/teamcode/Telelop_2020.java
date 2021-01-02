@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
+import com.arcrobotics.ftclib.hardware.HardwareDevice;
 import com.arcrobotics.ftclib.hardware.RevIMU;
 import com.arcrobotics.ftclib.hardware.SensorColor;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
@@ -13,8 +14,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
 
@@ -23,11 +28,13 @@ import com.qualcomm.robotcore.hardware.SwitchableLight;
 
 public class Telelop_2020 extends LinearOpMode {
 
+
+
     private MecanumDrive driveTrain;
     private MotorEx frontLeft, frontRight, backLeft, backRight, Wobble_Goal, Shooter_1, Shooter_2, Intake;
     //private ServoEx Wobble;
     private RevColorSensorV3 IndexColor;
-    private CRServo Indexer;
+    private CRServo Indexer, intakeRight, intakeLeft;
     private Servo WobbleGrabber;
 
 
@@ -52,6 +59,10 @@ public class Telelop_2020 extends LinearOpMode {
         //Servos
         Servo WobbleGrabber = hardwareMap.get(Servo.class, "Wobble Grabber");
         CRServo Indexer = hardwareMap.get(CRServo.class, "Indexer");
+        CRServo intakeRight = hardwareMap.get(CRServo.class, "Right Intake");
+        CRServo intakeLeft = hardwareMap.get(CRServo.class, "Left Intake");
+
+        intakeLeft.setDirection(CRServo.Direction.REVERSE);
 
         //Sensors
         IndexColor = hardwareMap.get(RevColorSensorV3.class, "Index Sensor");
@@ -99,7 +110,7 @@ public class Telelop_2020 extends LinearOpMode {
             //dt control (top field oriented, bottom robot oriented)
 
 
-            mecanum.driveFieldCentric(-gamepad1.right_stick_y, gamepad1.right_stick_x, -gamepad1.left_stick_x, -imu.getHeading());
+            mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x, imu.getHeading());
             //mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x);
 
             //Wobble goal in/out control
@@ -184,12 +195,18 @@ public class Telelop_2020 extends LinearOpMode {
             //Intake control
             if (gamepad1.right_bumper) {
                 Intake.set(1);
+                intakeLeft.setPower(1);
+                intakeRight.setPower(intakeLeft.getPower());
             }
             else if(gamepad1.left_bumper){
                 Intake.set(-1);
+                intakeLeft.setPower(-1);
+                intakeRight.setPower(intakeLeft.getPower());
             }
             else{
                 Intake.set(0);
+                intakeLeft.setPower(0);
+                intakeRight.setPower(intakeLeft.getPower());
             }
 
 

@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.jetbrains.annotations.NotNull;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -30,7 +31,7 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
     private MecanumDrive driveTrain;
     private MotorEx frontLeft, frontRight, backLeft, backRight, Wobble_Goal, Shooter_1, Shooter_2, Intake;
     private RevColorSensorV3 IndexColor;
-    private CRServo Indexer;
+    private CRServo Indexer, intakeRight, intakeLeft;
     private Servo WobbleGrabber;
 
     //toggles
@@ -69,28 +70,34 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        Motor frontRight = new Motor(hardwareMap, "frontRight", Motor.GoBILDA.RPM_1150);
-        Motor frontLeft = new Motor(hardwareMap, "frontLeft", Motor.GoBILDA.RPM_1150);
-        Motor backRight = new Motor(hardwareMap, "rearRight", Motor.GoBILDA.RPM_1150);
-        Motor backLeft = new Motor(hardwareMap, "rearLeft", Motor.GoBILDA.RPM_1150);
+
+        Servo WobbleGrabber = hardwareMap.get(Servo.class, "Wobble Grabber");
+        CRServo Indexer = hardwareMap.get(CRServo.class, "Indexer");
+        CRServo intakeRight = hardwareMap.get(CRServo.class, "Right Intake");
+        CRServo intakeLeft = hardwareMap.get(CRServo.class, "Left Intake");
+
+        //Motor frontRight = new Motor(hardwareMap, "frontRight", Motor.GoBILDA.RPM_1150);
+        //Motor frontLeft = new Motor(hardwareMap, "frontLeft", Motor.GoBILDA.RPM_1150);
+        //Motor backRight = new Motor(hardwareMap, "rearRight", Motor.GoBILDA.RPM_1150);
+        //Motor backLeft = new Motor(hardwareMap, "rearLeft", Motor.GoBILDA.RPM_1150);
         Motor Wobble_Goal = new Motor(hardwareMap, "Wobble_Goal", Motor.GoBILDA.RPM_223);
         Motor Shooter_1 = new Motor(hardwareMap, "Shooter_1", 28, 6000);
         Motor Shooter_2 = new Motor(hardwareMap, "Shooter_1", 28, 6000);
         Motor Intake = new Motor(hardwareMap, "Intake", 560, 300);
 
-        frontRight.setRunMode(Motor.RunMode.RawPower);
-        frontLeft.setRunMode(Motor.RunMode.RawPower);
-        backRight.setRunMode(Motor.RunMode.RawPower);
-        backLeft.setRunMode(Motor.RunMode.RawPower);
+        //frontRight.setRunMode(Motor.RunMode.VelocityControl);
+        //frontLeft.setRunMode(Motor.RunMode.VelocityControl);
+        //backRight.setRunMode(Motor.RunMode.VelocityControl);
+        //backLeft.setRunMode(Motor.RunMode.VelocityControl);
         Wobble_Goal.setRunMode(Motor.RunMode.PositionControl);
         Shooter_1.setRunMode(Motor.RunMode.RawPower);
         Shooter_2.setRunMode(Motor.RunMode.RawPower);
         Intake.setRunMode(Motor.RunMode.RawPower);
 
-        frontRight.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
-        frontLeft.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
-        backRight.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
-        backLeft.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
+        //frontRight.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
+        //frontLeft.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
+        //backRight.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
+        //backLeft.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
         Wobble_Goal.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
         Shooter_1.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
         Shooter_2.setVeloCoefficients(veloCoeff.p, veloCoeff.i, veloCoeff.d);
@@ -148,7 +155,7 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
         switch (rings) {
             case ZERO:
                 Shoot(0.85, 3);
-
+                Intake("forward");
 
                 break;
 
@@ -160,7 +167,7 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
 
             case FOUR:
                 Shoot(0.85, 3);
-
+                Intake("reverse");
 
                 break;
         }
@@ -173,6 +180,18 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
         sleep(220 * amount);
         if (IndexColor.red() > 0.5) {
             Indexer.setPower(0);
+        }
+    }
+    private void Intake(@NotNull String direction){
+        if(direction.contains("forward")){
+            Intake.set(1);
+            intakeRight.setPower(1);
+            intakeLeft.setPower(-1);
+        }
+        else if(direction.contains("reverse")){
+            Intake.set(-1);
+            intakeRight.setPower(1);
+            intakeLeft.setPower(-1);
         }
     }
 }
