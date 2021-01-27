@@ -23,6 +23,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
 
+import org.opencv.core.Mat;
+import org.openftc.easyopencv.OpenCvPipeline;
+
 
 @TeleOp(name = "Drive 2020 (new)")
 
@@ -83,16 +86,24 @@ public class Telelop_2020 extends LinearOpMode {
         frontLeft.setRunMode(Motor.RunMode.RawPower);
         backRight.setRunMode(Motor.RunMode.RawPower);
         backLeft.setRunMode(Motor.RunMode.RawPower);
-        Wobble_Goal.setRunMode(Motor.RunMode.PositionControl);
-        Shooter_1.setRunMode(Motor.RunMode.RawPower);
-        Shooter_2.setRunMode(Motor.RunMode.RawPower);
+        Wobble_Goal.setRunMode(Motor.RunMode.RawPower);
+        Shooter_1.setRunMode(Motor.RunMode.VelocityControl);
+        Shooter_2.setRunMode(Motor.RunMode.VelocityControl);
         Intake.setRunMode(Motor.RunMode.RawPower);
+
+        Wobble_Goal.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
+        Shooter_1.setVeloCoefficients(0, 0, 0);
+        Shooter_2.setVeloCoefficients(0, 0, 0);
 
         //Shooter_1.setVeloCoefficients(0.05, 0.01, 0.31);
         //Shooter_2.setVeloCoefficients(0.05, 0.01, 0.31);
 
+        Wobble_Goal.resetEncoder();
         Wobble_Goal.setPositionCoefficient(0.05);
         Wobble_Goal.setPositionTolerance(56);
+
+
 
         MecanumDrive mecanum = new MecanumDrive(
                 frontLeft, frontRight, backLeft, backRight
@@ -105,6 +116,8 @@ public class Telelop_2020 extends LinearOpMode {
         waitForStart();
         while (opModeIsActive()) {
 
+            //processFrame();
+
             NormalizedRGBA colors = IndexColor.getNormalizedColors();
 
             //dt control (top field oriented, bottom robot oriented)
@@ -114,30 +127,38 @@ public class Telelop_2020 extends LinearOpMode {
             //mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x);
 
             //Wobble goal in/out control
-            if (gamepad1.a && WobbleToggle){
-                WobbleToggle=false;
-                if(WobbleOut){
-                    WobbleOut=false;
-                    Wobble_Goal.setTargetPosition(0);
-                }
-                else{
-                    WobbleOut=true;
-                    Wobble_Goal.setTargetPosition(460);
-                }
+            /*
+            if(gamepad1.dpad_left){
+                WobbleOut=false;
+                Wobble_Goal.setTargetPosition(0);
+                Wobble_Goal.set(0);
             }
-            else if(!gamepad1.a && !WobbleToggle){
-                WobbleToggle=true;
+            else if(gamepad1.dpad_right){
+                WobbleOut=true;
+                Wobble_Goal.setTargetPosition(460);
+                Wobble_Goal.set(0);
             }
 
-            while (!Wobble_Goal.atTargetPosition() && WobbleOut) {
-                Wobble_Goal.set(-0.75);
-            }
-            Wobble_Goal.stopMotor();
-
-            while (!Wobble_Goal.atTargetPosition() && !WobbleOut) {
+            if (!Wobble_Goal.atTargetPosition()) {
                 Wobble_Goal.set(0.75);
             }
-            Wobble_Goal.stopMotor();
+            else {
+                Wobble_Goal.stopMotor();
+            }
+             */
+            if(gamepad1.right_trigger>0.01) {
+                Wobble_Goal.set(-gamepad1.right_trigger/2);
+            }
+            else if(gamepad1.left_trigger>0.01){
+                Wobble_Goal.set(gamepad1.left_trigger/2);
+            }
+            else{
+                Wobble_Goal.set(0);
+            }
+
+            if (gamepad1.x){
+                WobbleGrabber.setPosition(1.0);
+            }
 
 
 
@@ -160,14 +181,15 @@ public class Telelop_2020 extends LinearOpMode {
 
 
             //Shooter on/off control
+            /*
             if(gamepad1.b && ShooterToggle){
                 ShooterToggle=false;
                 if(!ShooterRunning){
-                    Shooter_1.set(-0.85);
+                    Shooter_1.set(-1);
                     Shooter_2.set(Shooter_1.get());
                     ShooterRunning=true;
                 }
-                else{
+                else if(ShooterRunning){
                     Shooter_1.set(0);
                     Shooter_2.set(Shooter_1.get());
                     ShooterRunning=false;
@@ -176,17 +198,23 @@ public class Telelop_2020 extends LinearOpMode {
             else if(!gamepad1.b && !ShooterToggle){
                 ShooterToggle=true;
             }
+             */
 
+            if(gamepad1.b){
+                Shooter_1.set(-1);
+                Shooter_2.set(Shooter_1.get());
+            }
+            else{
+                Shooter_1.set(0);
+                Shooter_2.set(Shooter_1.get());
+            }
 
 
             //Shooting Rings Control
             if(gamepad1.y){
                 Indexer.setPower(-1);
             }
-            else if((colors.red > 0.5) && !gamepad1.y){
-                Indexer.setPower(0);
-            }
-            else {
+            else{
                 Indexer.setPower(0);
             }
 
@@ -217,8 +245,18 @@ public class Telelop_2020 extends LinearOpMode {
             telemetry.addData("Shooter Running", ShooterRunning);
             telemetry.addData("Wobble Position", WobbleOut);
             telemetry.addData("Wobble Grab", WobbleGrab);
+            telemetry.addData("Shooter 1 Position", Shooter_1.getCurrentPosition());
+            telemetry.addData("Shooter 2 Position", Shooter_2.getCurrentPosition());
+            telemetry.addData("Wobble Power", Wobble_Goal.get());
             telemetry.update();
         }
     }
-}
+    /*
+    private void processFrame() {
+    }
 
+    public Mat processFrame(Mat input){
+        return input;
+    }
+     */
+}
