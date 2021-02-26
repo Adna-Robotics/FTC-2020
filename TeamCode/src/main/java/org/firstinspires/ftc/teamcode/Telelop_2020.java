@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.hardware.HardwareDevice;
 import com.arcrobotics.ftclib.hardware.RevIMU;
@@ -22,16 +23,21 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.UniversalStuff.Hardware;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 
+@Config
 @TeleOp(name = "Drive 2020 (new)")
-
 public class Telelop_2020 extends LinearOpMode {
 
+    //Hardware hardware = new Hardware(hardwareMap);
 
+    public static double Velocity = 0.85;
 
     private MecanumDrive driveTrain;
     private MotorEx frontLeft, frontRight, backLeft, backRight, Wobble_Goal, Shooter_1, Shooter_2, Intake;
@@ -56,8 +62,17 @@ public class Telelop_2020 extends LinearOpMode {
     boolean ShooterRunning = false;
     boolean ShooterToggle = true;
 
+    //drive mode toggles
+    boolean DriveMode = false;
+    boolean DriveModeToggle = true;
+
+    String TelemetryDriveMode = "Field Oriented";
+
+
+
     @Override
     public void runOpMode() throws InterruptedException {
+
 
         //Servos
         Servo WobbleGrabber = hardwareMap.get(Servo.class, "Wobble Grabber");
@@ -87,17 +102,14 @@ public class Telelop_2020 extends LinearOpMode {
         backRight.setRunMode(Motor.RunMode.RawPower);
         backLeft.setRunMode(Motor.RunMode.RawPower);
         Wobble_Goal.setRunMode(Motor.RunMode.RawPower);
-        Shooter_1.setRunMode(Motor.RunMode.VelocityControl);
-        Shooter_2.setRunMode(Motor.RunMode.VelocityControl);
+        Shooter_1.setRunMode(Motor.RunMode.RawPower);
+        Shooter_2.setRunMode(Motor.RunMode.RawPower);
         Intake.setRunMode(Motor.RunMode.RawPower);
 
         Wobble_Goal.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
-        Shooter_1.setVeloCoefficients(0, 0, 0);
-        Shooter_2.setVeloCoefficients(0, 0, 0);
-
-        //Shooter_1.setVeloCoefficients(0.05, 0.01, 0.31);
-        //Shooter_2.setVeloCoefficients(0.05, 0.01, 0.31);
+        //Shooter_1.setVeloCoefficients(0, 0, 0);
+        //Shooter_2.setVeloCoefficients(0, 0, 0);
 
         Wobble_Goal.resetEncoder();
         Wobble_Goal.setPositionCoefficient(0.05);
@@ -112,19 +124,35 @@ public class Telelop_2020 extends LinearOpMode {
         RevIMU imu = new RevIMU(hardwareMap);
         imu.init();
 
+        mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x, imu.getHeading());
 
         waitForStart();
         while (opModeIsActive()) {
 
-            //processFrame();
-
             NormalizedRGBA colors = IndexColor.getNormalizedColors();
 
-            //dt control (top field oriented, bottom robot oriented)
+            //dt toggle
+            if(gamepad1.back && DriveModeToggle){
+                DriveModeToggle=false;
+                if(!DriveMode){
+                    mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x, imu.getHeading());
+                    DriveMode=true;
+                }
+                else if(DriveMode){
+                    mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x);
+                    DriveMode=false;
+                }
+            }
+            else if(!gamepad1.back && !DriveModeToggle){
+                DriveModeToggle=true;
+            }
 
-
-            mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x, imu.getHeading());
-            //mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x);
+            if(DriveMode){
+                TelemetryDriveMode = "Field Oriented";
+            }
+            else{
+                TelemetryDriveMode = "Robot Oriented";
+            }
 
             //Wobble goal in/out control
             /*
@@ -138,7 +166,6 @@ public class Telelop_2020 extends LinearOpMode {
                 Wobble_Goal.setTargetPosition(460);
                 Wobble_Goal.set(0);
             }
-
             if (!Wobble_Goal.atTargetPosition()) {
                 Wobble_Goal.set(0.75);
             }
@@ -146,6 +173,7 @@ public class Telelop_2020 extends LinearOpMode {
                 Wobble_Goal.stopMotor();
             }
              */
+
             if(gamepad1.right_trigger>0.01) {
                 Wobble_Goal.set(-gamepad1.right_trigger/2);
             }
@@ -155,6 +183,7 @@ public class Telelop_2020 extends LinearOpMode {
             else{
                 Wobble_Goal.set(0);
             }
+
 
             if (gamepad1.x){
                 WobbleGrabber.setPosition(1.0);
@@ -180,39 +209,30 @@ public class Telelop_2020 extends LinearOpMode {
 
 
 
+
             //Shooter on/off control
-            /*
             if(gamepad1.b && ShooterToggle){
                 ShooterToggle=false;
                 if(!ShooterRunning){
-                    Shooter_1.set(-1);
-                    Shooter_2.set(Shooter_1.get());
+                    Shooter_1.set(0.75);
+                    Shooter_2.set(0.75);
                     ShooterRunning=true;
                 }
                 else if(ShooterRunning){
                     Shooter_1.set(0);
-                    Shooter_2.set(Shooter_1.get());
+                    Shooter_2.set(0);
                     ShooterRunning=false;
                 }
             }
             else if(!gamepad1.b && !ShooterToggle){
                 ShooterToggle=true;
             }
-             */
 
-            if(gamepad1.b){
-                Shooter_1.set(-1);
-                Shooter_2.set(Shooter_1.get());
-            }
-            else{
-                Shooter_1.set(0);
-                Shooter_2.set(Shooter_1.get());
-            }
 
 
             //Shooting Rings Control
             if(gamepad1.y){
-                Indexer.setPower(-1);
+                Indexer.setPower(0.3);
             }
             else{
                 Indexer.setPower(0);
@@ -242,6 +262,7 @@ public class Telelop_2020 extends LinearOpMode {
 
 
             //Telemetry
+            telemetry.addData("Drive Mode", TelemetryDriveMode);
             telemetry.addData("Shooter Running", ShooterRunning);
             telemetry.addData("Wobble Position", WobbleOut);
             telemetry.addData("Wobble Grab", WobbleGrab);
@@ -251,12 +272,4 @@ public class Telelop_2020 extends LinearOpMode {
             telemetry.update();
         }
     }
-    /*
-    private void processFrame() {
-    }
-
-    public Mat processFrame(Mat input){
-        return input;
-    }
-     */
 }
