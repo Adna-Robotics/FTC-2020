@@ -286,6 +286,7 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
 
                 drive.followTrajectory(R4_1);
                 Shoot(0.85, 3);
+
                 drive.followTrajectory(R4_2);
                 Shoot(0.85, 3);
 

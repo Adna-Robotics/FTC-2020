@@ -3,41 +3,29 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
-import com.arcrobotics.ftclib.hardware.HardwareDevice;
 import com.arcrobotics.ftclib.hardware.RevIMU;
-import com.arcrobotics.ftclib.hardware.SensorColor;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.SwitchableLight;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.UniversalStuff.Hardware;
-import org.opencv.core.Mat;
-import org.openftc.easyopencv.OpenCvPipeline;
-
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
+// TODO: -tune shooter
+//       - tune wobble mechanism
+//       - power shot auto aim
 
 @Config
 @TeleOp(name = "Drive 2020 (new)")
 public class Telelop_2020 extends LinearOpMode {
 
-    //Hardware hardware = new Hardware(hardwareMap);
-
     public static double Velocity = 0.85;
+
+
 
     private MecanumDrive driveTrain;
     private MotorEx frontLeft, frontRight, backLeft, backRight, Wobble_Goal, Shooter_1, Shooter_2, Intake;
@@ -93,10 +81,10 @@ public class Telelop_2020 extends LinearOpMode {
         Motor backLeft = new Motor(hardwareMap, "rearLeft", Motor.GoBILDA.RPM_1150);
         Motor Wobble_Goal = new Motor(hardwareMap, "Wobble_Goal", Motor.GoBILDA.RPM_223);
         Motor Shooter_1 = new Motor(hardwareMap, "Shooter_1", 28, 6000);
-        Motor Shooter_2 = new Motor(hardwareMap, "Shooter_1", 28, 6000);
+        Motor Shooter_2 = new Motor(hardwareMap, "Shooter_2", 28, 6000);
         Motor Intake = new Motor(hardwareMap, "Intake", 560, 300);
 
-            //Behavior
+        //Behavior
         frontRight.setRunMode(Motor.RunMode.RawPower);
         frontLeft.setRunMode(Motor.RunMode.RawPower);
         backRight.setRunMode(Motor.RunMode.RawPower);
@@ -105,8 +93,9 @@ public class Telelop_2020 extends LinearOpMode {
         Shooter_1.setRunMode(Motor.RunMode.RawPower);
         Shooter_2.setRunMode(Motor.RunMode.RawPower);
         Intake.setRunMode(Motor.RunMode.RawPower);
-
         Wobble_Goal.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
+
 
         //Shooter_1.setVeloCoefficients(0, 0, 0);
         //Shooter_2.setVeloCoefficients(0, 0, 0);
@@ -114,7 +103,6 @@ public class Telelop_2020 extends LinearOpMode {
         Wobble_Goal.resetEncoder();
         Wobble_Goal.setPositionCoefficient(0.05);
         Wobble_Goal.setPositionTolerance(56);
-
 
 
         MecanumDrive mecanum = new MecanumDrive(
@@ -138,7 +126,7 @@ public class Telelop_2020 extends LinearOpMode {
                     mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x, imu.getHeading());
                     DriveMode=true;
                 }
-                else if(DriveMode){
+                else{
                     mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x);
                     DriveMode=false;
                 }
@@ -185,12 +173,6 @@ public class Telelop_2020 extends LinearOpMode {
             }
 
 
-            if (gamepad1.x){
-                WobbleGrabber.setPosition(1.0);
-            }
-
-
-
             //Wobble grab control
             if (gamepad1.dpad_up && WobbleGrabToggle){
                 WobbleGrabToggle=false;
@@ -209,7 +191,6 @@ public class Telelop_2020 extends LinearOpMode {
 
 
 
-
             //Shooter on/off control
             if(gamepad1.b && ShooterToggle){
                 ShooterToggle=false;
@@ -218,7 +199,7 @@ public class Telelop_2020 extends LinearOpMode {
                     Shooter_2.set(0.75);
                     ShooterRunning=true;
                 }
-                else if(ShooterRunning){
+                else{
                     Shooter_1.set(0);
                     Shooter_2.set(0);
                     ShooterRunning=false;
