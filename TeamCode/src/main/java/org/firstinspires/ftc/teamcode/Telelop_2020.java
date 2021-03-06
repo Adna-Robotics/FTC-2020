@@ -19,8 +19,7 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-// TODO: -tune shooter
-//       - tune wobble mechanism
+// TODO: - tune wobble mechanism
 //       - power shot auto aim
 
 @Config
@@ -92,8 +91,6 @@ public class Telelop_2020 extends LinearOpMode {
         Motor backRight = new Motor(hardwareMap, "rearRight", Motor.GoBILDA.RPM_1150);
         Motor backLeft = new Motor(hardwareMap, "rearLeft", Motor.GoBILDA.RPM_1150);
         Motor Wobble_Goal = new Motor(hardwareMap, "Wobble_Goal", Motor.GoBILDA.RPM_223);
-        //Motor Shooter_1 = new Motor(hardwareMap, "Shooter_1", 28, 6000);
-        //Motor Shooter_2 = new Motor(hardwareMap, "Shooter_2", 28, 6000);
         Motor Intake = new Motor(hardwareMap, "Intake", 560, 300);
 
         Shooter_1 = hardwareMap.get(DcMotorEx.class, "Shooter_1");
@@ -105,20 +102,12 @@ public class Telelop_2020 extends LinearOpMode {
         backRight.setRunMode(Motor.RunMode.RawPower);
         backLeft.setRunMode(Motor.RunMode.RawPower);
         Wobble_Goal.setRunMode(Motor.RunMode.PositionControl);
-//        Shooter_1.setRunMode(Motor.RunMode.VelocityControl);
-//        Shooter_2.setRunMode(Motor.RunMode.VelocityControl);
         Intake.setRunMode(Motor.RunMode.RawPower);
         Wobble_Goal.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         Shooter_1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Shooter_1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
-
-
-
-//        Shooter_1.setVeloCoefficients(0.002, 0.0004, 0);
-//        Shooter_2.setVeloCoefficients(0.002, 0.0004, 0);
 
         Wobble_Goal.resetEncoder();
         Wobble_Goal.setPositionCoefficient(WobbleMechanismP);
@@ -131,8 +120,6 @@ public class Telelop_2020 extends LinearOpMode {
 
         RevIMU imu = new RevIMU(hardwareMap);
         imu.init();
-
-        mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x, imu.getHeading());
 
         waitForStart();
         while (opModeIsActive()) {
@@ -154,11 +141,9 @@ public class Telelop_2020 extends LinearOpMode {
             if(gamepad1.back && DriveModeToggle){
                 DriveModeToggle=false;
                 if(!DriveMode){
-                    mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x, imu.getHeading());
                     DriveMode=true;
                 }
                 else{
-                    mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x);
                     DriveMode=false;
                 }
             }
@@ -167,11 +152,21 @@ public class Telelop_2020 extends LinearOpMode {
             }
 
             if(DriveMode){
+                mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x, imu.getHeading());
+            }
+            else{
+                mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x);
+            }
+
+
+            if(DriveMode){
                 TelemetryDriveMode = "Field Oriented";
             }
             else{
                 TelemetryDriveMode = "Robot Oriented";
             }
+
+
 
             //Wobble goal in/out control
             if(gamepad1.dpad_left){
@@ -191,17 +186,6 @@ public class Telelop_2020 extends LinearOpMode {
                 Wobble_Goal.stopMotor();
             }
 
-            /*
-            if(gamepad1.right_trigger>0.01) {
-                Wobble_Goal.set(-gamepad1.right_trigger/2);
-            }
-            else if(gamepad1.left_trigger>0.01){
-                Wobble_Goal.set(gamepad1.left_trigger/2);
-            }
-            else{
-                Wobble_Goal.set(0);
-            }
-            */
 
             //Wobble grab control
             if (gamepad1.dpad_up && WobbleGrabToggle){
