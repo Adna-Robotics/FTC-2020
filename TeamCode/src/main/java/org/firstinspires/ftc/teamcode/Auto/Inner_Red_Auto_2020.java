@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Auto;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -78,6 +79,12 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        telemetry.addData("Init:", "Started");
+        telemetry.update();
+
+
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Servo WobbleGrabber = hardwareMap.get(Servo.class, "Wobble Grabber");
@@ -103,6 +110,9 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
 
         RevIMU imu = new RevIMU(hardwareMap);
         imu.init();
+
+        telemetry.addData("Hardware:", "Initialized");
+        telemetry.update();
 
         //Camera stuff
         int cameraMonitorViewId = this
@@ -133,6 +143,9 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
 
         FtcDashboard.getInstance().startCameraStream(camera, 30);
 
+        telemetry.addData("Camera:", "Initialized");
+        telemetry.update();
+
         WobbleGrabber.setPosition(1);
 
 
@@ -141,7 +154,7 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         Trajectory ps1 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-56, -18, Math.toRadians(188)))
+                .splineToLinearHeading(new Pose2d(-56, -18, Math.toRadians(181)), Math.toRadians(180))
                 .build();
 
         Trajectory ps2 = drive.trajectoryBuilder(ps1.end())
@@ -152,6 +165,8 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
                 .lineToConstantHeading(new Vector2d(-56, -3.5))
                 .build();
 
+        telemetry.addData("Powershots:", "Built");
+        telemetry.update();
 
         //0 ring auto
         Trajectory R0_1 = drive.trajectoryBuilder(ps3.end())
@@ -168,6 +183,8 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
                 .splineToSplineHeading(new Pose2d(12, -9, 90), 90)
                 .build();
 
+        telemetry.addData("0 Rings:", "Built");
+        telemetry.update();
 
         //1 ring auto
         Trajectory R1_1 = drive.trajectoryBuilder(ps3.end())
@@ -205,6 +222,9 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
                 .splineToSplineHeading(new Pose2d(12, -9, 90), 180)
                 .build();
 
+        telemetry.addData("1 Ring:", "Built");
+        telemetry.update();
+
 
         //4 ring auto
         Trajectory R4_1 = drive.trajectoryBuilder(ps3.end())
@@ -223,6 +243,9 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
                 .splineToConstantHeading(new Vector2d(-18, -24), 180)
                 .build();
 
+        telemetry.addData("4 Rings:", "Built");
+        telemetry.update();
+
 
 
         while (!isStarted()) {
@@ -230,6 +253,9 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
             telemetry.addData("Ring Stack", height);
             telemetry.update();
         }
+
+        telemetry.addData("Autonomous:", "Ready");
+        telemetry.update();
 
 
         waitForStart();

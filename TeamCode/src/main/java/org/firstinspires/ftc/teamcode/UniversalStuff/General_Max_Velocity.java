@@ -1,28 +1,31 @@
 package org.firstinspires.ftc.teamcode.UniversalStuff;
 
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 
-@TeleOp(name = "Max Velocity Tuner", group = "Utilities")
+@TeleOp(name = "Velo tuner", group = "Utilities")
 public class General_Max_Velocity extends LinearOpMode {
-    Motor Shooter_1, Shooter_2;
+
+    private DcMotorEx Shooter_1, Shooter_2;
     double currentVelocity;
     double maxVelocity = 0.0;
 
 
     @Override
     public void runOpMode() throws InterruptedException {
-        Motor Shooter_1 = new Motor(hardwareMap, "Shooter_1", 28, 6000);
-        Motor Shooter_2 = new Motor(hardwareMap, "Shooter_2", 28, 6000);
+        Shooter_1 = hardwareMap.get(DcMotorEx.class, "Shooter_1");
+        Shooter_2 = hardwareMap.get(DcMotorEx.class, "Shooter_2");
 
         waitForStart();
         while (opModeIsActive()) {
-            Shooter_1.set(-1);
-            Shooter_2.set(-1);
+            Shooter_1.setPower(-1);
+            Shooter_2.setPower(-1);
 
-            currentVelocity = Shooter_1.getCorrectedVelocity();
+            currentVelocity = Shooter_1.getVelocity();
 
             if (currentVelocity > maxVelocity) {
                 maxVelocity = currentVelocity;
