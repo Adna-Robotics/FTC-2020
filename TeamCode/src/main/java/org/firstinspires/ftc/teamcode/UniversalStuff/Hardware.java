@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.gamepad1;
 
 @Disabled
 public class Hardware{
@@ -18,10 +17,6 @@ public class Hardware{
     public MotorEx frontLeft, frontRight, backLeft, backRight, Wobble_Goal, Shooter_1, Shooter_2, Intake;
     private CRServo Indexer, intakeRight, intakeLeft;
     private Servo WobbleGrabber;
-
-    public enum RunMode {
-        VelocityControl, PositionControl, RawPower
-    }
 
     HardwareMap hardwareMap  =  null;
 
@@ -34,7 +29,7 @@ public class Hardware{
         Motor Intake            =   new Motor(hardwareMap, "Intake", 560, 300);
         Motor Shooter_1         =   new Motor(hardwareMap, "Shooter_1", 28, 6000);
         Motor Shooter_2         =   new Motor(hardwareMap, "Shooter_1", 28, 6000);
-        Motor Wobble_Goal        =   new MotorEx(hardwareMap, "Wobble Goal", Motor.GoBILDA.RPM_223);
+        Motor Wobble_Goal       =   new MotorEx(hardwareMap, "Wobble Goal", Motor.GoBILDA.RPM_223);
 
         frontRight.setRunMode(Motor.RunMode.RawPower);
         frontLeft.setRunMode(Motor.RunMode.RawPower);
@@ -56,13 +51,8 @@ public class Hardware{
 
         Servo WobbleGrabber = hardwareMap.get(Servo.class, "Wobble Grabber");
 
-        MecanumDrive mecanum    =   new MecanumDrive(
-                frontLeft, frontRight, backLeft, backRight
-        );
-
         RevIMU imu              =   new RevIMU(hardwareMap);
         imu.init();
 
-        mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x, imu.getHeading());
     }
 }
