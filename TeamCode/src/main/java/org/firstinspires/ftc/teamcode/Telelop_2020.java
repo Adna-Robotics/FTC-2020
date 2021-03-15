@@ -144,10 +144,10 @@ public class Telelop_2020 extends LinearOpMode {
 
 
             if(DriveMode){
-                mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x/2 + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4), imu.getHeading());
+                mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x/1.25 + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4), imu.getHeading());
             }
             else{
-                mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x/2 + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4));
+                mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x/1.25 + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4));
             }
 
 
@@ -162,7 +162,7 @@ public class Telelop_2020 extends LinearOpMode {
 
 
             //Wobble goal in/out control
-            if(gamepad1.dpad_left && WobbleToggle){
+            if(gamepad2.dpad_left && WobbleToggle){
                 WobbleToggle=false;
                 if(!WobbleOut){
                     Wobble_Goal.setTargetPosition(WobblePosition);
@@ -173,11 +173,11 @@ public class Telelop_2020 extends LinearOpMode {
                     WobbleOut=false;
                 }
             }
-            else if(!gamepad1.dpad_left && !WobbleToggle){
+            else if(!gamepad2.dpad_left && !WobbleToggle){
                 WobbleToggle=true;
             }
 
-            if(!Wobble_Goal.atTargetPosition()){
+            if(!Wobble_Goal.atTargetPosition() && opModeIsActive()){
                 Wobble_Goal.set(0.35);
             }
             else{
@@ -187,7 +187,7 @@ public class Telelop_2020 extends LinearOpMode {
 
 
             //Wobble grab control
-            if (gamepad1.dpad_up && WobbleGrabToggle){
+            if (gamepad2.dpad_up && WobbleGrabToggle){
                 WobbleGrabToggle=false;
                 if(!WobbleGrab){
                     WobbleGrabber.setPosition(WobbleGrabPosition);
@@ -198,14 +198,14 @@ public class Telelop_2020 extends LinearOpMode {
                     WobbleGrab=false;
                 }
             }
-            else if(!gamepad1.dpad_up && !WobbleGrabToggle){
+            else if(!gamepad2.dpad_up && !WobbleGrabToggle){
                 WobbleGrabToggle=true;
             }
 
 
 
             //Shooter on/off control
-            if(gamepad1.b && ShooterToggle){
+            if(gamepad2.b && ShooterToggle){
                 ShooterToggle=false;
                 if(!ShooterRunning){
                     shooter_1.setVelocity(Velocity);
@@ -218,17 +218,17 @@ public class Telelop_2020 extends LinearOpMode {
                     ShooterRunning=false;
                 }
             }
-            else if(!gamepad1.b && !ShooterToggle){
+            else if(!gamepad2.b && !ShooterToggle){
                 ShooterToggle=true;
             }
 
 
 
             //Shooting Rings Control
-            if(gamepad1.y){
+            if(gamepad2.y){
                 Indexer.setPower(IndexerPosition);
             }
-            else if(gamepad1.a){
+            else if(gamepad2.a){
                 if(ShootTimer.time()<100){
                     Indexer.setPower(IndexerPosition);
                 }

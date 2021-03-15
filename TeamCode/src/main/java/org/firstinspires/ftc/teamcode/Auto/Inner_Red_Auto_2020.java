@@ -147,11 +147,14 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
 
 
         //powershots
+        /*
         Pose2d startPose = new Pose2d(-63, -24, Math.toRadians(180));
         drive.setPoseEstimate(startPose);
 
-        Trajectory ps1 = drive.trajectoryBuilder(startPose, true)
-                .splineToSplineHeading(new Pose2d(-56, -18, Math.toRadians(181)), Math.toRadians(-20))
+         */
+
+        Trajectory ps1 = drive.trajectoryBuilder(new Pose2d())
+                .splineTo(new Vector2d(30, 30), 0)
                 .build();
 
         Trajectory ps2 = drive.trajectoryBuilder(ps1.end())
@@ -268,15 +271,15 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
         switch (rings) {
             case ZERO:
                 drive.followTrajectory(ps1);
-                Shoot(-1700, 1);
+                //Shoot(-1700, 1);
 
 
-                drive.followTrajectory(ps2);
-                Shoot(-1700, 1);
+                //drive.followTrajectory(ps2);
+                //Shoot(-1700, 1);
 
 
-                drive.followTrajectory(ps3);
-                Shoot(-1700, 1);
+                //drive.followTrajectory(ps3);
+                //Shoot(-1700, 1);
 
                 //drive.followTrajectory(R0_1);
 
@@ -286,10 +289,13 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
 
             case ONE:
                 drive.followTrajectory(ps1);
+
                 Shoot(-1700, 1);
 
+                if (!drive.isBusy()) {
                 drive.followTrajectory(ps2);
                 Shoot(-1700, 1);
+                }
 
                 drive.followTrajectory(ps3);
                 Shoot(-1700, 1);
