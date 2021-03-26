@@ -5,26 +5,20 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
-import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.hardware.RevIMU;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Eocv_rings_detection;
-import org.firstinspires.ftc.teamcode.UniversalStuff.PoseStorage;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.jetbrains.annotations.NotNull;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -37,28 +31,12 @@ import static org.firstinspires.ftc.teamcode.Telelop_2020.Velocity;
 import static org.firstinspires.ftc.teamcode.Telelop_2020.WobbleGrabPosition;
 import static org.firstinspires.ftc.teamcode.Telelop_2020.WobbleMechanismP;
 import static org.firstinspires.ftc.teamcode.Telelop_2020.WobblePosition;
-
+@Disabled
 @Autonomous(name="Inner Red 2020")
 
 public class Inner_Red_Auto_2020 extends LinearOpMode {
 
     Eocv_rings_detection vision = null;
-
-
-    public MotorEx frontLeft, frontRight, backLeft, backRight, Wobble_Goal, intake;
-    //private RevColorSensorV3 IndexColor;
-    public CRServo Indexer, intakeRight, intakeLeft;
-    public Servo WobbleGrabber;
-
-    //toggles
-    boolean WobbleOut = false; //false=in and true=out
-    boolean WobbleToggle = true;
-    boolean ShooterRunning = false;
-    boolean ShooterToggle = true;
-
-    public enum RunMode {
-        VelocityControl, PositionControl, RawPower
-    }
 
     public int i = 0;
 
@@ -146,60 +124,53 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
         WobbleGrabber.setPosition(WobbleGrabPosition);
 
 
-        //powershots
-        /*
-        Pose2d startPose = new Pose2d(-63, -24, Math.toRadians(180));
+
+        //First 3 Shots
+        Pose2d startPose = new Pose2d(-63, -48, Math.toRadians(180));
         drive.setPoseEstimate(startPose);
 
-         */
-
-        Trajectory ps1 = drive.trajectoryBuilder(new Pose2d())
-                .splineTo(new Vector2d(30, 30), 0)
+        Trajectory Shots = drive.trajectoryBuilder(startPose)
+                .splineToSplineHeading(new Pose2d(0, -24, Math.toRadians(181)), Math.toRadians(75))
                 .build();
 
-        Trajectory ps2 = drive.trajectoryBuilder(ps1.end())
-                .lineToConstantHeading(new Vector2d(-56, -11.5))
-                .build();
-
-        Trajectory ps3 = drive.trajectoryBuilder(ps2.end())
-                .lineToConstantHeading(new Vector2d(-56, -3.5))
-                .build();
-
-        telemetry.addData("Powershots:", "Built");
+        telemetry.addData("Shots:", "Built");
         telemetry.update();
 
+
         //0 ring auto
-        Trajectory R0_1 = drive.trajectoryBuilder(ps3.end())
+        Trajectory R0_1 = drive.trajectoryBuilder(Shots.end())
                 .addDisplacementMarker(() ->{
                     Wobble_Goal.setTargetPosition(WobblePosition);
-                    Wobble_Goal.set(1);
+                    Wobble_Goal.set(0.5);
                 })
-                .splineToSplineHeading(new Pose2d(-4, -48, Math.toRadians(160)), Math.toRadians(-135))
-                .addDisplacementMarker(() ->{
+                .splineToSplineHeading(new Pose2d(0, -40, Math.toRadians(120)), Math.toRadians(110))//first wobble drop
+                .addDisplacementMarker(18, () ->{
                     WobbleGrabber.setPosition(0.65);
                 })
-                .splineToSplineHeading(new Pose2d(-32, -50, Math.toRadians(-10)), Math.toRadians(0))
-                .addDisplacementMarker(() ->{
-                    WobbleGrabber.setPosition(0);
+                .splineToSplineHeading(new Pose2d(-24, -32, Math.toRadians(0)), Math.toRadians(180))//grab second wobble
+                .addDisplacementMarker(32, () ->{
+                    WobbleGrabber.setPosition(WobbleGrabPosition);
                 })
-                .splineToSplineHeading(new Pose2d(-4, -48, Math.toRadians(160)), Math.toRadians(-70))
-                .addDisplacementMarker(() ->{
+                .splineToSplineHeading(new Pose2d(0, -40, Math.toRadians(125)), Math.toRadians(-40))//drop second wobble
+                .addDisplacementMarker(66, () ->{
                     WobbleGrabber.setPosition(0.65);
                 })
-                .splineToSplineHeading(new Pose2d(12, -9, Math.toRadians(90)), Math.toRadians(90))
+                .addDisplacementMarker(() ->{
+                    Wobble_Goal.setTargetPosition(0);
+                    Wobble_Goal.set(0);
+                })
+                .splineToSplineHeading(new Pose2d(12, 0, Math.toRadians(90)), Math.toRadians(90))//park
                 .build();
 
         telemetry.addData("0 Rings:", "Built");
         telemetry.update();
 
         //1 ring auto
-        Trajectory R1_1 = drive.trajectoryBuilder(ps3.end())
-                .splineToSplineHeading(new Pose2d(-36, 0, Math.toRadians(270)), Math.toRadians(-45))
+        Trajectory R1_1 = drive.trajectoryBuilder(Shots.end())
                 .addDisplacementMarker(() -> {
                     Intake(1);
                 })
-                .splineToSplineHeading(new Pose2d(-24, -24, Math.toRadians(300)), Math.toRadians(-70))
-                .splineToSplineHeading(new Pose2d(0, -36, Math.toRadians(188)), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-18, -24), Math.toRadians(180))
                 .addDisplacementMarker(() ->{
                     Intake(0);
                 })
@@ -207,25 +178,30 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
 
         Trajectory R1_2 = drive.trajectoryBuilder(R1_1.end())
                 .addDisplacementMarker(() ->{
-                Wobble_Goal.setTargetPosition(-460);
-                Wobble_Goal.set(1);
+                Wobble_Goal.setTargetPosition(WobblePosition);
+                Wobble_Goal.set(0.5);
                 })
-                .splineToSplineHeading(new Pose2d(20, -24, Math.toRadians(135)), Math.toRadians(90))
-                .addDisplacementMarker(() ->{
+
+                .splineToConstantHeading(new Vector2d(20, -32), Math.toRadians(-10))//place 1st wobble
+                .addDisplacementMarker(24, () ->{
+                    WobbleGrabber.setPosition(0.65);
+                })
+
+                .splineToSplineHeading(new Pose2d(-24, -32, Math.toRadians(0)), Math.toRadians(180))//pick up 2nd wobble
+                .addDisplacementMarker(48, () ->{
                     WobbleGrabber.setPosition(WobbleGrabPosition);
                 })
-                .splineToSplineHeading(new Pose2d(-18, -48, Math.toRadians(0)), Math.toRadians(220))
-                .splineToConstantHeading(new Vector2d(-32, -54), Math.toRadians(160))
-                .addDisplacementMarker(() ->{
-                    WobbleGrabber.setPosition(0.6);
+
+                .splineToSplineHeading(new Pose2d(20, -32, Math.toRadians(180)), Math.toRadians(170))//place 2nd wobble
+                .addDisplacementMarker(48, () ->{
+                    WobbleGrabber.setPosition(0.65);
                 })
-                .splineToSplineHeading(new Pose2d(20, -24, Math.toRadians(160)), Math.toRadians(70))
                 .addDisplacementMarker(() ->{
-                    WobbleGrabber.setPosition(WobbleGrabPosition);
+                    WobbleGrabber.setPosition(0);
                     Wobble_Goal.setTargetPosition(0);
-                    Wobble_Goal.set(1);
+                    Wobble_Goal.set(0.5);
                 })
-                .splineToSplineHeading(new Pose2d(12, -9, Math.toRadians(90)), Math.toRadians(180))
+                .splineToSplineHeading(new Pose2d(12, 0, Math.toRadians(90)), Math.toRadians(90))//park
                 .build();
 
         telemetry.addData("1 Ring:", "Built");
@@ -233,20 +209,60 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
 
 
         //4 ring auto
-        Trajectory R4_1 = drive.trajectoryBuilder(ps3.end())
-                .splineToSplineHeading(new Pose2d(38, -38, Math.toRadians(135)), Math.toRadians(-30))
-                .addDisplacementMarker(() ->{
-                    WobbleGrabber.setPosition(WobbleGrabPosition);
-                })
-                .splineToSplineHeading(new Pose2d(24, -24, Math.toRadians(180)), Math.toRadians(150))
+        Trajectory R4_1 = drive.trajectoryBuilder(Shots.end())
                 .addDisplacementMarker(() ->{
                     Intake(1);
                 })
-                .splineToConstantHeading(new Vector2d(-12, -24), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-18, -24), Math.toRadians(180))//collect 2 rings
+                .addDisplacementMarker(() ->{
+                    Intake(0);
+                })
                 .build();
 
+
         Trajectory R4_2  = drive.trajectoryBuilder(R4_1.end())
-                .splineToConstantHeading(new Vector2d(-18, -24), Math.toRadians(180))
+                .addDisplacementMarker(() ->{
+                    Intake(1);
+                })
+                .splineToConstantHeading(new Vector2d(-24, -24), Math.toRadians(180))//collect other 2 rings
+                .addDisplacementMarker(() ->{
+                    Intake(0);
+                })
+                .build();
+
+        Trajectory R4_3 = drive.trajectoryBuilder(R4_2.end())
+                .addDisplacementMarker(() ->{
+                    Wobble_Goal.setTargetPosition(WobblePosition);
+                    Wobble_Goal.set(0.5);
+                })
+                .splineToSplineHeading(new Pose2d(40, -40, Math.toRadians(150)), Math.toRadians(10))//place first wobble
+                .addDisplacementMarker(() ->{
+                    WobbleGrabber.setPosition(0.65);
+                    Wobble_Goal.setTargetPosition(WobblePosition);
+                    Wobble_Goal.set(0.5);
+                })
+                .splineToSplineHeading(new Pose2d(-24, -32, Math.toRadians(0)), Math.toRadians(180))//grab other wobble
+                .addDisplacementMarker(() ->{
+                    WobbleGrabber.setPosition(WobbleGrabPosition);
+                })
+                .build();
+
+        Trajectory R4_4 = drive.trajectoryBuilder(R4_3.end())
+                .addDisplacementMarker(() ->{
+                    Wobble_Goal.setTargetPosition(0);
+                    Wobble_Goal.set(0.5);
+                })
+                .splineToSplineHeading(new Pose2d(40, -40, Math.toRadians(150)), Math.toRadians(-65))//place 2nd wobble
+                .addDisplacementMarker(50, () ->{
+                    Wobble_Goal.set(WobblePosition);
+                    Wobble_Goal.set(0.5);
+                })
+                .addDisplacementMarker(() ->{
+                    WobbleGrabber.setPosition(0.65);
+                    Wobble_Goal.setTargetPosition(0);
+                    Wobble_Goal.set(0.5);
+                })
+                .splineToSplineHeading(new Pose2d(12, 0, Math.toRadians(90)), Math.toRadians(90))//park
                 .build();
 
         telemetry.addData("4 Rings:", "Built");
@@ -268,66 +284,46 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
 
         UGContourRingPipeline.Height rings = pipeline.getHeight();
 
+        camera.stopStreaming();
+        camera.closeCameraDevice();
+
         switch (rings) {
             case ZERO:
-                drive.followTrajectory(ps1);
-                //Shoot(-1700, 1);
+                drive.followTrajectory(Shots);
+                /*
+                Shoot(Velocity, 3);
 
-
-                //drive.followTrajectory(ps2);
-                //Shoot(-1700, 1);
-
-
-                //drive.followTrajectory(ps3);
-                //Shoot(-1700, 1);
-
-                //drive.followTrajectory(R0_1);
-
-                //PoseStorage.currentPose = drive.getPoseEstimate();
-
+                drive.followTrajectory(R0_1);
                 break;
 
+                 */
+
             case ONE:
-                drive.followTrajectory(ps1);
+                drive.followTrajectory(Shots);
+                Shoot(Velocity, 3);
 
-                Shoot(-1700, 1);
-
-                if (!drive.isBusy()) {
-                drive.followTrajectory(ps2);
-                Shoot(-1700, 1);
-                }
-
-                drive.followTrajectory(ps3);
-                Shoot(-1700, 1);
 
                 drive.followTrajectory(R1_1);
-                Shoot(Velocity, 1);
+                Shoot(-1700, 1);
 
                 drive.followTrajectory(R1_2);
 
-                PoseStorage.currentPose = drive.getPoseEstimate();
-                
+
                 break;
 
             case FOUR:
-                drive.followTrajectory(ps1);
-                Shoot(-1700, 1);
-
-                drive.followTrajectory(ps2);
-                Shoot(-1700, 1);
-
-                drive.followTrajectory(ps3);
-                Shoot(-1700, 1);
+                drive.followTrajectory(Shots);
+                Shoot(Velocity, 3);
 
                 drive.followTrajectory(R4_1);
-                Shoot(-1700, 3);
+                Shoot(-1800, 3);
 
                 drive.followTrajectory(R4_2);
-                Shoot(-1750, 3);
+                Shoot(-1700, 3);
 
+                drive.followTrajectory(R4_3);
 
-                PoseStorage.currentPose = drive.getPoseEstimate();
-
+                drive.followTrajectory(R4_4);
                 break;
         }
     }
@@ -348,15 +344,14 @@ public class Inner_Red_Auto_2020 extends LinearOpMode {
         for (i = 0; i < amount; i++){
             shooter_1.setVelocity(velocity);
             shooter_2.setVelocity(shooter_1.getVelocity());
-            sleep(500);
+            sleep(150);
             Indexer.setPower(0.3);
-            sleep(75);
+            sleep(150);
             Indexer.setPower(0);
-            sleep(100);
+            sleep(150);
         }
         shooter_1.setVelocity(0);
         shooter_2.setVelocity(0);
-        sleep(1000);
     }
     public void Intake(double power){
         Motor intake = new Motor(hardwareMap, "Intake", 560, 300);

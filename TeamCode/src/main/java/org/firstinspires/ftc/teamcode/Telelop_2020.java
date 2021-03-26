@@ -1,13 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.hardware.RevIMU;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
-
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -21,23 +17,24 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 //       - power shot auto aim
 
 //@Config
-@TeleOp(name = "Drive 2020 (new)")
+@TeleOp(name = "Drive 2020")
 public class Telelop_2020 extends LinearOpMode {
 
-    public static int Velocity = -1750;
+    public static int Velocity = -1710;
     public static double IndexerPosition = 0.3;
     public static double WobbleGrabPosition = 0.03;
-    public static int WobblePosition= -500;
+    public static int WobblePosition= -515;
     public static double WobbleMechanismP = 0.005;
     public static double ShooterP = 14;
     public static double ShooterI = 0.4;
     public static double ShooterF = 13.5;
-    public double ShooterActualVelocity = 0;
-    public double ShooterTargetVelocity = 0;
+    public static int ShooterTiming = 100;
+    //public double ShooterActualVelocity = 0;
+    //public double ShooterTargetVelocity = 0;
 
 
     //Wobble goal toggle switch
-    boolean WobbleOut = false; //false=in and true=out
+    boolean WobbleOut = true; //false=in and true=out
     boolean WobbleToggle = true;
 
     boolean WobbleGrab = false;
@@ -47,16 +44,16 @@ public class Telelop_2020 extends LinearOpMode {
     boolean ShooterRunning = false;
     boolean ShooterToggle = true;
 
-    //drive mode toggles
-    boolean DriveMode = false;
-    boolean DriveModeToggle = true;
 
-    String TelemetryDriveMode = "Field Oriented";
+
+
+
+
 
 
 
     @Override
-    public void runOpMode()throws InterruptedException{
+    public void runOpMode() throws InterruptedException {
 
 
         //Servos
@@ -98,7 +95,7 @@ public class Telelop_2020 extends LinearOpMode {
         shooter_2.setVelocityPIDFCoefficients(ShooterP, ShooterI, 0, ShooterF);
 
 
-        Wobble_Goal.resetEncoder();
+
         Wobble_Goal.setPositionCoefficient(WobbleMechanismP);
         Wobble_Goal.setPositionTolerance(10);
 
@@ -112,6 +109,8 @@ public class Telelop_2020 extends LinearOpMode {
 
         ElapsedTime ShootTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         ShootTimer.reset();
+
+
 
 
 
@@ -132,32 +131,10 @@ public class Telelop_2020 extends LinearOpMode {
 
              */
 
-
-            //dt toggle
-            if(gamepad1.back && DriveModeToggle){
-                DriveModeToggle=false;
-                DriveMode= !DriveMode;
-            }
-            else if(!gamepad1.back && !DriveModeToggle){
-                DriveModeToggle=true;
-            }
-
-
-            if(DriveMode){
-                mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x/1.25 + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4), imu.getHeading());
-            }
-            else{
-                mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x/1.25 + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4));
-            }
+            mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x/1.25 + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4));
 
 
 
-            if(DriveMode){
-                TelemetryDriveMode = "Field Oriented";
-            }
-            else{
-                TelemetryDriveMode = "Robot Oriented";
-            }
 
 
 
@@ -209,7 +186,7 @@ public class Telelop_2020 extends LinearOpMode {
                 ShooterToggle=false;
                 if(!ShooterRunning){
                     shooter_1.setVelocity(Velocity);
-                    shooter_2.setVelocity(shooter_1.getVelocity());
+                    shooter_2.setVelocity(Velocity);
                     ShooterRunning=true;
                 }
                 else{
@@ -228,16 +205,21 @@ public class Telelop_2020 extends LinearOpMode {
             if(gamepad2.y){
                 Indexer.setPower(IndexerPosition);
             }
+
             else if(gamepad2.a){
-                if(ShootTimer.time()<100){
+                if(ShootTimer.time()<ShooterTiming){
                     Indexer.setPower(IndexerPosition);
                 }
-                else if(ShootTimer.time()<200){
-                    ShootTimer.reset();
+                else if(ShootTimer.time()>ShooterTiming*2){
+                    Indexer.setPower(0);
                 }
             }
             else{
                 Indexer.setPower(0);
+            }
+
+            if(ShootTimer.time()>ShooterTiming*3){
+                ShootTimer.reset();
             }
 
 
@@ -264,8 +246,8 @@ public class Telelop_2020 extends LinearOpMode {
 
 
 
+
             //Telemetry
-            telemetry.addData("Drive Mode", TelemetryDriveMode);
             telemetry.addData("Shooter Running", ShooterRunning);
             telemetry.addData("Wobble Position", WobbleOut);
             telemetry.addData("Wobble Grab", WobbleGrab);
@@ -274,6 +256,7 @@ public class Telelop_2020 extends LinearOpMode {
             telemetry.addData("Shooter 1 Position", shooter_1.getCurrentPosition());
             telemetry.addData("Shooter 2 Position", shooter_2.getCurrentPosition());
             telemetry.addData("Wobble Power", Wobble_Goal.getCurrentPosition());
+            telemetry.addData("Timer Time", ShootTimer);
             telemetry.update();
         }
     }

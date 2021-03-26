@@ -124,8 +124,3 @@ repositories {
         dirs rootProject.file('libs')
     }
 }
-<<<<<<< HEAD
-apply from: 'build.release.gradle'
-=======
-
->>>>>>> cd037e0e744335a58f2b28ce9e0ad7e87cc024ac
