@@ -13,17 +13,16 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-// TODO: - tune wobble mechanism
-//       - power shot auto aim
+// TODO: -power shot auto aim
 
 //@Config
 @TeleOp(name = "Drive 2020")
 public class Telelop_2020 extends LinearOpMode {
 
-    public static int Velocity = -1710;
+    public static int Velocity = -1750;
     public static double IndexerPosition = 0.3;
     public static double WobbleGrabPosition = 0.03;
-    public static int WobblePosition= -515;
+    public static int WobblePosition= -220;
     public static double WobbleMechanismP = 0.005;
     public static double ShooterP = 14;
     public static double ShooterI = 0.4;
@@ -34,15 +33,20 @@ public class Telelop_2020 extends LinearOpMode {
 
 
     //Wobble goal toggle switch
-    boolean WobbleOut = true; //false=in and true=out
+    boolean WobbleOut = false; //false=in and true=out
     boolean WobbleToggle = true;
 
-    boolean WobbleGrab = false;
+    boolean WobbleGrab = true;
     boolean WobbleGrabToggle = true;
 
     //Shooter toggle switch
     boolean ShooterRunning = false;
     boolean ShooterToggle = true;
+
+    boolean Powershot = false;
+    boolean PowershotToggle = true;
+
+
 
 
 
@@ -115,6 +119,11 @@ public class Telelop_2020 extends LinearOpMode {
 
 
         waitForStart();
+
+        WobbleGrabber.setPosition(WobbleGrabPosition);
+        sleep(200);
+        Wobble_Goal.setTargetPosition(0);
+
         while (opModeIsActive()) {
             //ftc dashboard tuning
             /*
@@ -223,40 +232,53 @@ public class Telelop_2020 extends LinearOpMode {
             }
 
 
+            //shooter velocity toggle
+            if(gamepad1.back && PowershotToggle){
+                PowershotToggle=false;
+                if(!Powershot){
+                    Velocity = -1500;
+                    Powershot=true;
+                }
+                else{
+                    Velocity = -1710;
+                    Powershot=false;
+                }
+            }
+            else if(!gamepad1.back && !PowershotToggle){
+                PowershotToggle=true;
+            }
+
+
 
 
             //Intake control
             if (gamepad1.right_bumper) {
                 Intake.set(1);
                 intakeLeft.setPower(1);
-                intakeRight.setPower(intakeLeft.getPower());
+                intakeRight.setPower(1);
             }
             else if(gamepad1.left_bumper){
                 Intake.set(-1);
                 intakeLeft.setPower(-1);
-                intakeRight.setPower(intakeLeft.getPower());
+                intakeRight.setPower(-1);
             }
             else{
                 Intake.set(0);
                 intakeLeft.setPower(0);
-                intakeRight.setPower(intakeLeft.getPower());
+                intakeRight.setPower(0);
             }
 
-
-
+             
 
 
 
             //Telemetry
+            telemetry.addData("Powershot Speed", Powershot);
             telemetry.addData("Shooter Running", ShooterRunning);
             telemetry.addData("Wobble Position", WobbleOut);
             telemetry.addData("Wobble Grab", WobbleGrab);
             telemetry.addData("Shooter Velocity", shooter_1.getVelocity());
             telemetry.addData("Target Velocity", Velocity);
-            telemetry.addData("Shooter 1 Position", shooter_1.getCurrentPosition());
-            telemetry.addData("Shooter 2 Position", shooter_2.getCurrentPosition());
-            telemetry.addData("Wobble Power", Wobble_Goal.getCurrentPosition());
-            telemetry.addData("Timer Time", ShootTimer);
             telemetry.update();
         }
     }
