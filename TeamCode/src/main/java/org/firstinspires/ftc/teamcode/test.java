@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 import static org.firstinspires.ftc.teamcode.Telelop_2020.IndexerPosition;
@@ -39,7 +40,10 @@ public class test extends LinearOpMode {
         Wobble_Goal.setPositionTolerance(10);
 
         Servo WobbleGrabber = hardwareMap.get(Servo.class, "Wobble Grabber");
+        Servo RingBlocker = hardwareMap.get(Servo.class, "Ring Blocker");
+
         WobbleGrabber.setPosition(WobbleGrabPosition);
+        RingBlocker.setPosition(1);
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
@@ -48,7 +52,7 @@ public class test extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         Trajectory traj = drive.trajectoryBuilder(startPose, true)
-                .splineToSplineHeading(new Pose2d(-5, -30, Math.toRadians(181)), Math.toRadians(-20))
+                .splineToSplineHeading(new Pose2d(-5, -31, Math.toRadians(181)), Math.toRadians(-20))
                 .build();
 
 
@@ -56,8 +60,11 @@ public class test extends LinearOpMode {
                 .addDisplacementMarker(() ->{
                     Intake(1);
                 })
-                .splineToConstantHeading(new Vector2d(-22, -40), Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(0, -30), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-22, -48), Math.toRadians(-10),
+                        SampleMecanumDrive.getVelocityConstraint(18, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                        )
+                .splineToConstantHeading(new Vector2d(-4, -30), Math.toRadians(0))
                 .addDisplacementMarker(() ->{
                     Intake(0);
                 })
@@ -67,18 +74,20 @@ public class test extends LinearOpMode {
                 .addDisplacementMarker(() ->{
                     Intake(1);
                 })
-                .splineToConstantHeading(new Vector2d(-48, -48), Math.toRadians(180))
-                .splineToConstantHeading(new Vector2d(0, -30), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-48, -50), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(0, -24), Math.toRadians(0))
                 .addDisplacementMarker(() ->{
-                    Intake(-1);
+                    Intake(0);
                 })
                 .build();
+
 
         Trajectory traj4 = drive.trajectoryBuilder(traj3.end())
                 .splineToConstantHeading(new Vector2d(24, 0), Math.toRadians(90))
                 .addDisplacementMarker(() ->{
                     Wobble_Goal.setTargetPosition(WobblePosition);
                     Wobble_Goal.set(0.5);
+                    RingBlocker.setPosition(0.9);
                 })
                 .build();
 
@@ -91,7 +100,8 @@ public class test extends LinearOpMode {
 
 
         drive.followTrajectory(traj);
-        Shoot(-1750, 3);
+        RingBlocker.setPosition(0.38);
+        Shoot(-1750, 4);
         drive.followTrajectory(traj2);
         Shoot(-1750, 3);
         drive.followTrajectory(traj3);

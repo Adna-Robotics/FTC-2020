@@ -62,6 +62,7 @@ public class Telelop_2020 extends LinearOpMode {
 
         //Servos
         Servo WobbleGrabber = hardwareMap.get(Servo.class, "Wobble Grabber");
+        Servo RingBlocker = hardwareMap.get(Servo.class, "Ring Blocker");
         CRServo Indexer = hardwareMap.get(CRServo.class, "Indexer");
         CRServo intakeRight = hardwareMap.get(CRServo.class, "Right Intake");
         CRServo intakeLeft = hardwareMap.get(CRServo.class, "Left Intake");
@@ -120,9 +121,12 @@ public class Telelop_2020 extends LinearOpMode {
 
         waitForStart();
 
+
+
         WobbleGrabber.setPosition(WobbleGrabPosition);
         sleep(200);
-        Wobble_Goal.setTargetPosition(0);
+        Wobble_Goal.setTargetPosition(-WobblePosition);
+        RingBlocker.setPosition(0.9);
 
         while (opModeIsActive()) {
             //ftc dashboard tuning
