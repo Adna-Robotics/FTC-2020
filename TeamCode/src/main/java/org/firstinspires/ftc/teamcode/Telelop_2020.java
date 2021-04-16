@@ -27,7 +27,7 @@ public class Telelop_2020 extends LinearOpMode {
     public static double ShooterP = 14;
     public static double ShooterI = 0.4;
     public static double ShooterF = 13.5;
-    public static int ShooterTiming = 100;
+    public static int ShooterTiming = 60;
     //public double ShooterActualVelocity = 0;
     //public double ShooterTargetVelocity = 0;
 
@@ -140,7 +140,7 @@ public class Telelop_2020 extends LinearOpMode {
 
              */
 
-            mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x/1.25 + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4));
+            mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4));
 
 
 
@@ -227,7 +227,7 @@ public class Telelop_2020 extends LinearOpMode {
                 Indexer.setPower(0);
             }
 
-            if(ShootTimer.time()>ShooterTiming*3){
+            if(ShootTimer.time()>275){
                 ShootTimer.reset();
             }
 
@@ -240,7 +240,7 @@ public class Telelop_2020 extends LinearOpMode {
                     Powershot=true;
                 }
                 else{
-                    Velocity = -1710;
+                    Velocity = -1750;
                     Powershot=false;
                 }
             }

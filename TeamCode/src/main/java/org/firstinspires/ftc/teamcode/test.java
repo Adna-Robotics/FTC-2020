@@ -67,10 +67,10 @@ public class test extends LinearOpMode {
                 .addDisplacementMarker(() ->{
                     Intake(1);
                 })
-                .splineToConstantHeading(new Vector2d(-48, -40), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-48, -48), Math.toRadians(180))
                 .splineToConstantHeading(new Vector2d(0, -30), Math.toRadians(0))
                 .addDisplacementMarker(() ->{
-                    Intake(0);
+                    Intake(-1);
                 })
                 .build();
 
@@ -96,6 +96,7 @@ public class test extends LinearOpMode {
         Shoot(-1750, 3);
         drive.followTrajectory(traj3);
         Shoot(-1750, 3);
+        Intake(0);
         drive.followTrajectory(traj4);
 
 
