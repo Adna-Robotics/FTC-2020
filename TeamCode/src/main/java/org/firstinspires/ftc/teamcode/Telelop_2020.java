@@ -13,6 +13,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
+
 // TODO: -power shot auto aim
 
 //@Config
@@ -28,7 +30,7 @@ public class Telelop_2020 extends LinearOpMode {
     public static double ShooterI = 0.4;
     public static double ShooterF = 13.5;
     public static int ShooterTiming = 60;
-    //public double ShooterActualVelocity = 0;
+    public double ShooterActualVelocity = 0;
     //public double ShooterTargetVelocity = 0;
 
 
@@ -67,7 +69,7 @@ public class Telelop_2020 extends LinearOpMode {
         CRServo intakeRight = hardwareMap.get(CRServo.class, "Right Intake");
         CRServo intakeLeft = hardwareMap.get(CRServo.class, "Left Intake");
 
-        intakeLeft.setDirection(CRServo.Direction.REVERSE);
+        intakeLeft.setDirection(REVERSE);
 
         //Sensors
         RevColorSensorV3 indexColor = hardwareMap.get(RevColorSensorV3.class, "Index Sensor");
@@ -105,9 +107,8 @@ public class Telelop_2020 extends LinearOpMode {
         Wobble_Goal.setPositionTolerance(10);
 
 
-        MecanumDrive mecanum = new MecanumDrive(
-                frontLeft, frontRight, backLeft, backRight
-        );
+
+
 
         RevIMU imu = new RevIMU(hardwareMap);
         imu.init();
@@ -120,13 +121,35 @@ public class Telelop_2020 extends LinearOpMode {
 
 
         waitForStart();
-
-
-
-        WobbleGrabber.setPosition(WobbleGrabPosition);
-        sleep(200);
-        Wobble_Goal.setTargetPosition(-WobblePosition);
         RingBlocker.setPosition(0.9);
+
+        frontLeft.set(-0.25);
+        frontRight.set(0.2);
+        backLeft.set(-0.25);
+        backRight.set(0.2);
+        telemetry.addData("Driving", "Now");
+        telemetry.update();
+
+        sleep(50);
+
+        frontLeft.set(0);
+        frontRight.set(0);
+        backLeft.set(0);
+        backRight.set(0);
+        telemetry.addData("Driving", "Stopped");
+        telemetry.update();
+
+        MecanumDrive mecanum = new MecanumDrive(
+                frontLeft, frontRight, backLeft, backRight
+        );
+
+        Wobble_Goal.setTargetPosition(WobblePosition);
+        Wobble_Goal.set(0.5);
+        sleep(250);
+        WobbleGrabber.setPosition(WobbleGrabPosition);
+        sleep(1000);
+        Wobble_Goal.setTargetPosition(0);
+        Wobble_Goal.set(0.5);
 
         while (opModeIsActive()) {
             //ftc dashboard tuning
@@ -136,15 +159,16 @@ public class Telelop_2020 extends LinearOpMode {
             shooter_1.setVelocityPIDFCoefficients(ShooterP, ShooterI, 0, ShooterF);
             shooter_2.setVelocityPIDFCoefficients(ShooterP, ShooterI, 0, ShooterF);
 
-            ShooterActualVelocity = shooter_1.getVelocity();
+
             ShooterTargetVelocity = Velocity;
 
 
             Wobble_Goal.setPositionCoefficient(WobbleMechanismP);
 
              */
+            ShooterActualVelocity = shooter_1.getVelocity();
 
-            mecanum.driveRobotCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4));
+            mecanum.driveFieldCentric(-gamepad1.right_stick_x, gamepad1.right_stick_y, -gamepad1.left_stick_x + (gamepad1.left_trigger/4) - (gamepad1.right_trigger/4), imu.getHeading());
 
 
 
@@ -215,10 +239,9 @@ public class Telelop_2020 extends LinearOpMode {
 
 
             //Shooting Rings Control
-            if(gamepad2.y){
-                Indexer.setPower(IndexerPosition);
-            }
 
+
+            /*
             else if(gamepad2.a){
                 if(ShootTimer.time()<ShooterTiming){
                     Indexer.setPower(IndexerPosition);
@@ -232,6 +255,20 @@ public class Telelop_2020 extends LinearOpMode {
             }
 
             if(ShootTimer.time()>275){
+                ShootTimer.reset();
+            }
+             */
+            if(gamepad2.y){
+                Indexer.setPower(IndexerPosition);
+            }
+            else if(gamepad2.a && ShootTimer.time()<60 && shooter_1.getVelocity()<-1720){
+                Indexer.setPower(IndexerPosition);
+            }
+            else{
+                Indexer.setPower(0);
+            }
+
+            if(ShootTimer.time()>60){
                 ShootTimer.reset();
             }
 
